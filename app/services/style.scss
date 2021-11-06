@@ -1,0 +1,68 @@
+main {
+    min-height: 100vh;
+}
+
+.hero-header {
+    position: relative;
+    height: 100vh;
+    background-image: url(bg.jpg);
+    background-position: left;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+@mixin content {
+    text-align: center;
+}
+
+@mixin text {
+    display: block;
+    color: #FFF;
+    font-size: 8vw;
+    font-weight: normal;
+}
+
+.primary-text {
+    animation-delay: 0s;
+    @include text;
+    @include content;
+}
+
+.secondary-text {
+    animation-delay: 0.1s;
+    @include text;
+    @include content;
+}
+
+.twitter-button {
+    animation-delay: 0.5s;
+    @include content
+}
+
+img.twitter-icon {
+    content: "";
+    width: 17px;
+    height: 13px;
+    display: inline-block;
+    margin-top: 2px;
+    margin-right: 4px;
+    vertical-align: text-top;
+    background-position : center center;
+    background-repeat: no-repeat;
+}
+
+canvas {
+    position: fixed;
+    display: flex;
+    right: 0;
+    bottom: 0;
+    width: max-content;
+    height: 15vh;
+}
+
+#container-canvas {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    mix-blend-mode: overlay;
+}
