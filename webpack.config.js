@@ -3,7 +3,10 @@ const CopyFilePlugin = require("copy-webpack-plugin")
 
 module.exports = {
     mode: "production",
-    entry: "./app/services/bundle.ts",
+    entry: [
+        "./app/services/bundle.ts",
+        //"./app/services/sw.ts",
+        ],
     output: {
         path: __dirname + "/dist/assets",
         filename: "bundle.js",
@@ -66,9 +69,9 @@ module.exports = {
                     context: `${__dirname}`,
                 },
                 {
-                    from: `${__dirname}/app/services/tw_logo.png`,
+                    from: `${__dirname}/app/services/sw.js`,
                     to: `${__dirname}/dist/assets`,
-                    context: `${__dirname}`
+                    context: `${__dirname}`,
                 },
             ]
         }),
