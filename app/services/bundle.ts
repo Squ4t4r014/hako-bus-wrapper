@@ -12,15 +12,53 @@ if ("serviceWorker" in navigator) {
 }
 
 class HTTPClient {
-    private url: string;
-    private axios = require("axios")
+    private url: string = "";
+    //private axios = require("axios")
     
-    axios.get(url).then(function (response) {
-        //正常
-    }).catch(function (error) {
-        //異常
-    }).then(function () {
-        //finally
-    })
+    private tabName = "searchTab";
+    private from = "";
+    private to = "";
+    private locale = "ja";
+    private bsid = "1";
+    
+    reset() {
+        this.tabName = "searchTab";
+        this.from = "";
+        this.to = "";
+        this.locale = "ja";
+        this.bsid = "1";
+    }
+    
+    setUrl(url: string) {
+        this.url = url;
+    }
+    
+    from(busStop: String) {
+        this.from = busStop
+    }
+    
+    to(busStop: String) {
+        this.to = busStop
+    }
+    
+    fetch() {
+        fetch(this.url)
+        .then(response => response.text())
+        .then(text => {
+            //callback
+            console.log(text)
+        });
+    }
+}
+
+//usage
+//var client = new HTTPClient();
+//client.setUrl("https://jsonplaceholder.typicode.com/todos/1");
+//client.fetch();
+
+//https://developer.mozilla.org/ja/docs/Web/API/Fetch_API/Using_Fetch
+//https://developer.mozilla.org/ja/docs/Web/API/Response/text
+
+class Parser {
     
 }
