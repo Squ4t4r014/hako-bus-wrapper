@@ -11,6 +11,24 @@ if ("serviceWorker" in navigator) {
     });
 }
 
+interface UrlParams {
+    [key: string]: string;
+}
+
+class UrlBuilder {
+    private params: UrlParams = {};
+
+    getUrl(): string {
+        var url = "?"
+
+        Object.keys(this.params).forEach(key => {
+            url += key + "=" + this.params[key] + "&";
+        });
+
+        return url;
+    }
+}
+
 class HTTPClient {
     private url: string = "";
     //private axios = require("axios")
