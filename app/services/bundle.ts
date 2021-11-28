@@ -77,6 +77,8 @@ class HTTPClient {
 //https://developer.mozilla.org/ja/docs/Web/API/Fetch_API/Using_Fetch
 //https://developer.mozilla.org/ja/docs/Web/API/Response/text
 
+//https://maku.blog/p/x3ocp9a/
+
 class Parser {
     
 }
