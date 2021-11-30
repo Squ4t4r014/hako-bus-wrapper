@@ -1,1 +1,1 @@
-web: bin/zura-chan-zura
+web: bin/hako-bus-wrapper

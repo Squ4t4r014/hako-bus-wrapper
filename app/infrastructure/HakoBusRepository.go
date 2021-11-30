@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"io"
 	"io/ioutil"
 	"net/http"
 )
@@ -29,7 +30,12 @@ func (p *URLParameter) fetch() string {
 	url := BASE_URI + "tabName=" + p.tabName + "&from=" + p.from + "&to=" + p.to + "&locale=" + p.locale + "&bsid=" + p.bsid
 
 	response, _ := http.Get(url)
-	defer response.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			//connection error
+		}
+	}(response.Body)
 
 	body, _ := ioutil.ReadAll(response.Body)
 	return string(body)

@@ -21,17 +21,11 @@ class UrlBuilder {
     private readonly params: UrlParams = {};
 
     constructor(
-        tabName = "searchTab",
         from = "",
         to = "",
-        locale = "ja",
-        bsid = "1"
     ) {
-        this.params["tabName"] = tabName
         this.params["from"] = from
         this.params["to"] = to
-        this.params["locale"] = locale
-        this.params["bsid"] = bsid
     }
 
     from(from: string): UrlBuilder {
@@ -45,7 +39,7 @@ class UrlBuilder {
     }
 
     build(): string {
-        let url = "https://hakobus.bus-navigation.jp/wgsys/wgs/bus.htm?";
+        let url = "http://127.0.0.1:8080/api?";
 
         Object.keys(this.params).forEach(key => {
             url += key + "=" + this.params[key] + "&";
@@ -70,7 +64,10 @@ class HTTPClient {
 
         const data = await fetch(this.url, {
             method: "GET",
-            mode: "no-cors",
+            mode: "cors",
+            headers: {
+                "Content-Type": "application/json",
+            },
         }).then(function (response) {
             return response.text();
         }).catch(function (reason) {

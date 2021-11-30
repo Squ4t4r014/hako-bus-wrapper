@@ -1,10 +1,12 @@
 package infrastructure
 
 import (
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/thinkerou/favicon"
 	"net/http"
 	"os"
+	"time"
 )
 
 type Routing struct {
@@ -19,6 +21,7 @@ func NewRouting() *Routing {
 		AbsolutePath: c.AbsolutePath,
 	}
 	r.loadTemplates()
+	r.setHeader()
 	r.setRouting()
 	return r
 }
@@ -27,6 +30,24 @@ func (r *Routing) loadTemplates() {
 	r.Gin.Use(favicon.New("./dist/assets/favicon.ico"))
 	r.Gin.Static("/assets", r.AbsolutePath+"/dist/assets")
 	r.Gin.LoadHTMLGlob(r.AbsolutePath + "/app/interfaces/presenters/*")
+}
+
+func (r *Routing) setHeader() {
+	r.Gin.Use(cors.New(cors.Config{
+		AllowOrigins: []string {
+			"*",
+		},
+		AllowCredentials: false,
+		AllowHeaders: []string {
+			"Content-Type",
+		},
+		AllowMethods: []string {
+			"GET",
+			"HEAD",
+			"OPTIONS",
+		},
+		MaxAge: time.Duration(86400),
+	}))
 }
 
 func (r *Routing) setRouting() {
@@ -41,9 +62,8 @@ func (r *Routing) setRouting() {
 		ride := newRide(from, to)
 		body := ride.fetch()
 
-		println(body)
 		c.JSON(200, gin.H{
-
+			"body": len(body),
 		})
 	})
 }
