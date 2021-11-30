@@ -4,68 +4,81 @@ import "bootstrap-honoka/dist/css/bootstrap.min.css"
 import "animate.css"
 import "./style.scss"
 
+import axios, {Axios} from "axios"
+
 //For Android PWA
-if ("serviceWorker" in navigator) {
+/*if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js").then((req) => {
         console.log("Service worker registerd.", req)
     });
-}
+}*/
 
 interface UrlParams {
     [key: string]: string;
 }
 
 class UrlBuilder {
-    private params: UrlParams = {};
+    private readonly params: UrlParams = {};
 
-    getUrl(): string {
-        var url = "?"
+    constructor(
+        tabName = "searchTab",
+        from = "",
+        to = "",
+        locale = "ja",
+        bsid = "1"
+    ) {
+        this.params["tabName"] = tabName
+        this.params["from"] = from
+        this.params["to"] = to
+        this.params["locale"] = locale
+        this.params["bsid"] = bsid
+    }
+
+    from(from: string): UrlBuilder {
+        this.params["from"] = from
+        return this
+    }
+
+    to(to: string): UrlBuilder {
+        this.params["to"] = to
+        return this
+    }
+
+    build(): string {
+        let url = "https://hakobus.bus-navigation.jp/wgsys/wgs/bus.htm?";
 
         Object.keys(this.params).forEach(key => {
             url += key + "=" + this.params[key] + "&";
         });
 
-        return url;
+        return url.slice(0, url.length - 1);
     }
+
+
 }
 
 class HTTPClient {
     private url: string = "";
-    //private axios = require("axios")
-    
-    private tabName = "searchTab";
-    private from = "";
-    private to = "";
-    private locale = "ja";
-    private bsid = "1";
-    
-    reset() {
-        this.tabName = "searchTab";
-        this.from = "";
-        this.to = "";
-        this.locale = "ja";
-        this.bsid = "1";
-    }
     
     setUrl(url: string) {
         this.url = url;
     }
     
-    from(busStop: String) {
-        this.from = busStop
-    }
-    
-    to(busStop: String) {
-        this.to = busStop
-    }
-    
-    fetch() {
-        fetch(this.url)
-        .then(response => response.text())
-        .then(text => {
-            //callback
-            console.log(text)
+    async fetch(): Promise<string> {
+        //const res = await axios.get(this.url);
+        //return res.data
+
+        const data = await fetch(this.url, {
+            method: "GET",
+            mode: "no-cors",
+        }).then(function (response) {
+            return response.text();
+        }).catch(function (reason) {
+            return reason.text()
         });
+
+        console.log(data)
+        return data;
     }
 }
 
@@ -82,3 +95,11 @@ class HTTPClient {
 class Parser {
     
 }
+
+let urlBuilder = new UrlBuilder()
+let url = urlBuilder.from("函館駅前").to("五稜郭").build()
+console.log(url)
+
+let httpClient = new HTTPClient()
+httpClient.setUrl(url)
+httpClient.fetch().then(r => console.log(r))

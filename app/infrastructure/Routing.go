@@ -30,11 +30,21 @@ func (r *Routing) loadTemplates() {
 }
 
 func (r *Routing) setRouting() {
-	const ZURA = "ずらちゃんずら"
-	const DEPLOY = "https://zura-chan-zura.herokuapp.com"
-
 	r.Gin.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", gin.H{})
+	})
+
+	r.Gin.GET("/api", func(c *gin.Context) {
+		from := c.Query("from")
+		to := c.Query("to")
+
+		ride := newRide(from, to)
+		body := ride.fetch()
+
+		println(body)
+		c.JSON(200, gin.H{
+
+		})
 	})
 }
 
