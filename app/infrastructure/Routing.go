@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"encoding/json"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/thinkerou/favicon"
@@ -34,14 +35,14 @@ func (r *Routing) loadTemplates() {
 
 func (r *Routing) setHeader() {
 	r.Gin.Use(cors.New(cors.Config{
-		AllowOrigins: []string {
+		AllowOrigins: []string{
 			"*",
 		},
 		AllowCredentials: false,
-		AllowHeaders: []string {
+		AllowHeaders: []string{
 			"Content-Type",
 		},
-		AllowMethods: []string {
+		AllowMethods: []string{
 			"GET",
 			"HEAD",
 			"OPTIONS",
@@ -61,10 +62,9 @@ func (r *Routing) setRouting() {
 
 		ride := newRide(from, to)
 		busInformation := ride.fetch()
-
-		c.JSON(200, gin.H{
-			"body": len(body),
-		})
+		marshal, _ := json.Marshal(busInformation)
+		println(string(marshal))
+		c.JSON(200, string(marshal))
 	})
 }
 

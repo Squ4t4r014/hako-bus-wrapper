@@ -2,49 +2,49 @@ package infrastructure
 
 import (
 	"bytes"
+	"github.com/PuerkitoBio/goquery"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
-	"github.com/PuerkitoBio/goquery"
 )
 
 type URLParameter struct {
-	tabName		string
-	from		string
-	to			string
-	locale		string
-	bsid		string
+	tabName string
+	from    string
+	to      string
+	locale  string
+	bsid    string
 }
 
 type BusInformation struct {
-	refTime		time.Time
-	isBusExist	bool
-	results		[]result
+	RefTime    time.Time `json:"ref_time"`
+	IsBusExist bool      `json:"is_bus_exist"`
+	Results    []result  `json:"results"`
 }
 
 type result struct {
-	name		string //バス系統名
-	via			string //バス経由地
-	direction	string //バスの目的地
-	from		string //乗車バス停
-	to			string //降車バス停
-	departure	busTime //バス発車
-	arrive		busTime //バス到着
-	take		int //予想乗車時間
-	estimate	int //あと何分後にバスが来るか
+	Name      string  `json:"name"`      //バス系統名
+	Via       string  `json:"via"`       //バス経由地
+	Direction string  `json:"direction"` //バスの目的地
+	From      string  `json:"from"`      //乗車バス停
+	To        string  `json:"to"`        //降車バス停
+	Departure busTime `json:"departure"` //バス発車
+	Arrive    busTime `json:"arrive"`    //バス到着
+	Take      int     `json:"take"`      //予想乗車時間
+	Estimate  int     `json:"estimate"`  //あと何分後にバスが来るか
 }
 
 type busTime struct {
-	schedule	time.Time
-	prediction	time.Time
+	Schedule   time.Time `json:"schedule"`
+	Prediction time.Time `json:"prediction"`
 }
 
 func (b *busTime) delayed() int {
-	p := b.prediction.Hour() * 60 + b.prediction.Minute()
-	s := b.schedule.Hour() * 60 + b.schedule.Minute()
+	p := b.Prediction.Hour()*60 + b.Prediction.Minute()
+	s := b.Schedule.Hour()*60 + b.Schedule.Minute()
 
 	return p - s
 }
@@ -52,10 +52,10 @@ func (b *busTime) delayed() int {
 func newRide(from string, to string) *URLParameter {
 	return &URLParameter{
 		tabName: "searchTab",
-		from: from,
-		to: to,
-		locale: "ja",
-		bsid: "1",
+		from:    from,
+		to:      to,
+		locale:  "ja",
+		bsid:    "1",
 	}
 }
 
@@ -87,7 +87,7 @@ func parse(buffer []byte) BusInformation {
 
 	refTime, err := time.Parse(
 		TIME_PATTERN,
-		document.Find("div.container").Find("div.label_bar").Find("div.clearfix").Find("ul").Find("li").Next().Text(),
+		document.Find("div.container").Find("div.label_bar").Find("div.clearfix").Find("li").Next().Text(),
 	)
 	if err != nil {
 
@@ -96,9 +96,9 @@ func parse(buffer []byte) BusInformation {
 	//60分以内にバスがない(情報が掲載されてない)とき、スクレイピングを終了する
 	if document.Find("div#errInfo") != nil {
 		busInformation = BusInformation{
-			refTime: refTime,
-			isBusExist: false,
-			results: []result{},
+			RefTime:    refTime,
+			IsBusExist: false,
+			Results:    []result{},
 		}
 	}
 
@@ -107,27 +107,37 @@ func parse(buffer []byte) BusInformation {
 		bus := selection.Find("table").Find("tbody").Find("tr")
 		result := result{}
 
-		result.name = bus.Find("td").Find("span").Text();bus.Next()
-		result.via = bus.Find("td").Text();bus.Next()
-		result.direction = bus.Find("td").Text();bus.Next()
-		result.estimate, _ = strconv.Atoi(strings.ReplaceAll(bus.Find("td").Text(), TIME_REGEX, ""));bus.Next()
-		result.from = bus.Find("td").Find("span").Next().Text();bus.Next()
+		result.Name = bus.Find("td").Find("span").Text()
+		bus.Next()
+		result.Via = bus.Find("td").Text()
+		bus.Next()
+		result.Direction = bus.Find("td").Text()
+		bus.Next()
+		result.Estimate, _ = strconv.Atoi(strings.ReplaceAll(bus.Find("td").Text(), TIME_REGEX, ""))
+		bus.Next()
+		result.From = bus.Find("td").Find("span").Next().Text()
+		bus.Next()
 		//result.departure
-		departure := bus.Find("td");bus.Next()
-		result.departure.schedule, _ = time.Parse(TIME_PATTERN, strings.ReplaceAll(departure.Text(), TIME_REGEX, ""));departure.Next()
-		result.departure.prediction, _ = time.Parse(TIME_PATTERN, strings.ReplaceAll(departure.Text(), TIME_REGEX, ""))
-		result.to = bus.Find("td").Find("span").Next().Text();bus.Next()
-		arrive := bus.Find("td");bus.Next()
-		result.arrive.schedule, _ = time.Parse(TIME_PATTERN, strings.ReplaceAll(departure.Text(), TIME_REGEX, ""));arrive.Next()
-		result.arrive.prediction, _ = time.Parse(TIME_PATTERN, strings.ReplaceAll(departure.Text(), TIME_REGEX, ""))
+		departure := bus.Find("td")
+		bus.Next()
+		result.Departure.Schedule, _ = time.Parse(TIME_PATTERN, strings.ReplaceAll(departure.Text(), TIME_REGEX, ""))
+		departure.Next()
+		result.Departure.Prediction, _ = time.Parse(TIME_PATTERN, strings.ReplaceAll(departure.Text(), TIME_REGEX, ""))
+		result.To = bus.Find("td").Find("span").Next().Text()
+		bus.Next()
+		arrive := bus.Find("td")
+		bus.Next()
+		result.Arrive.Schedule, _ = time.Parse(TIME_PATTERN, strings.ReplaceAll(departure.Text(), TIME_REGEX, ""))
+		arrive.Next()
+		result.Arrive.Prediction, _ = time.Parse(TIME_PATTERN, strings.ReplaceAll(departure.Text(), TIME_REGEX, ""))
 		take := bus.Find("td").Text()
 		if bus.Find("td").Text() == "まもなく発車します" {
-			result.take = 0
+			result.Take = 0
 		} else {
-			result.take, _ = strconv.Atoi(take)
+			result.Take, _ = strconv.Atoi(take)
 		}
 
-		busInformation.results = append(busInformation.results, result)
+		busInformation.Results = append(busInformation.Results, result)
 	})
 
 	return busInformation
