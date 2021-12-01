@@ -60,7 +60,7 @@ func (r *Routing) setRouting() {
 		to := c.Query("to")
 
 		ride := newRide(from, to)
-		body := ride.fetch()
+		busInformation := ride.fetch()
 
 		c.JSON(200, gin.H{
 			"body": len(body),
