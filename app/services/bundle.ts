@@ -6,6 +6,8 @@ import "./style.scss"
 
 import axios, {Axios} from "axios"
 
+const BASE__URL = "http://127.0.0.1:8080/api?"
+
 //For Android PWA
 /*if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js").then((req) => {
@@ -24,22 +26,22 @@ class UrlBuilder {
         from = "",
         to = "",
     ) {
-        this.params["from"] = from
-        this.params["to"] = to
+        this.params["from"] = from;
+        this.params["to"] = to;
     }
 
     from(from: string): UrlBuilder {
-        this.params["from"] = from
-        return this
+        this.params["from"] = from;
+        return this;
     }
 
     to(to: string): UrlBuilder {
-        this.params["to"] = to
-        return this
+        this.params["to"] = to;
+        return this;
     }
 
     build(): string {
-        let url = "http://127.0.0.1:8080/api?";
+        let url = BASE__URL;
 
         Object.keys(this.params).forEach(key => {
             url += key + "=" + this.params[key] + "&";
@@ -59,9 +61,6 @@ class HTTPClient {
     }
     
     async fetch(): Promise<string> {
-        //const res = await axios.get(this.url);
-        //return res.data
-
         const data = await fetch(this.url, {
             method: "GET",
             mode: "cors",
@@ -71,10 +70,10 @@ class HTTPClient {
         }).then(function (response) {
             return response.text();
         }).catch(function (reason) {
-            return reason.text()
+            return reason.text();
         });
 
-        console.log(data)
+        console.log(data);
         return data;
     }
 }
