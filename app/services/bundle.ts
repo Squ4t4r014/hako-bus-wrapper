@@ -4,7 +4,7 @@ import "bootstrap-honoka/dist/css/bootstrap.min.css"
 import "animate.css"
 import "./style.scss"
 
-import axios, {Axios} from "axios"
+const BASE__URL = "http://127.0.0.1:8080/api?"
 
 //For Android PWA
 /*if ("serviceWorker" in navigator) {
@@ -24,22 +24,22 @@ class UrlBuilder {
         from = "",
         to = "",
     ) {
-        this.params["from"] = from
-        this.params["to"] = to
+        this.params["from"] = from;
+        this.params["to"] = to;
     }
 
     from(from: string): UrlBuilder {
-        this.params["from"] = from
-        return this
+        this.params["from"] = from;
+        return this;
     }
 
     to(to: string): UrlBuilder {
-        this.params["to"] = to
-        return this
+        this.params["to"] = to;
+        return this;
     }
 
     build(): string {
-        let url = "http://127.0.0.1:8080/api?";
+        let url = BASE__URL;
 
         Object.keys(this.params).forEach(key => {
             url += key + "=" + this.params[key] + "&";
@@ -59,9 +59,6 @@ class HTTPClient {
     }
     
     async fetch(): Promise<string> {
-        //const res = await axios.get(this.url);
-        //return res.data
-
         const data = await fetch(this.url, {
             method: "GET",
             mode: "cors",
@@ -71,10 +68,10 @@ class HTTPClient {
         }).then(function (response) {
             return response.text();
         }).catch(function (reason) {
-            return reason.text()
+            return reason.text();
         });
 
-        console.log(data)
+        console.log(data);
         return data;
     }
 }
@@ -88,9 +85,33 @@ class HTTPClient {
 //https://developer.mozilla.org/ja/docs/Web/API/Response/text
 
 //https://maku.blog/p/x3ocp9a/
+type BusInformation = {
+    refTime: string,
+    isBusExist: string,
+    results: Result[],
+}
 
+type Result = {
+    name: string,
+    via: string,
+    direction: string,
+    from: string,
+    to: string,
+    departure: BusTime,
+    arrive: BusTime,
+    take: number,
+    estimate: number,
+}
+
+type BusTime = {
+    schedule: string,
+    prediction: string,
+}
 class Parser {
-    
+    private jsonText = "{\"reftime\":\"13:55\",\"isbusexist\":\"true\",\"results\":[{\"name\":\"N21\",\"via\":\"西浦線\",\"direction\":\"江梨\",\"from\":\"沼津駅\",\"to\":\"長井崎小中一貫学校\",\"departure\":{\"schedule\":\"13:55\",\"prediction\":\"13:55\"},\"arrive\":{\"schedule\":\"14:45\",\"prediction\":\"14:45\"},\"take\":50,\"estimate\":30}]}"
+
+    private busInformation = JSON.parse(jsonText) as BusInformation
+    console.log(busInformation)
 }
 
 let urlBuilder = new UrlBuilder()
