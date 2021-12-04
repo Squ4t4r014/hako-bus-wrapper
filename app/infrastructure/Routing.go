@@ -7,6 +7,7 @@ import (
 	"github.com/thinkerou/favicon"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -63,8 +64,9 @@ func (r *Routing) setRouting() {
 		ride := newRide(from, to)
 		busInformation := ride.fetch()
 		marshal, _ := json.Marshal(busInformation)
-		println(string(marshal))
-		c.JSON(200, string(marshal))
+		jsonText := strings.NewReplacer("\\n", "", "\\t", "").Replace(string(marshal))
+		println(jsonText)
+		c.JSON(200, jsonText)
 	})
 }
 

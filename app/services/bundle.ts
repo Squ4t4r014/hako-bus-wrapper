@@ -108,10 +108,12 @@ type BusTime = {
     prediction: string,
 }
 class Parser {
-    private jsonText = "{\"reftime\":\"13:55\",\"isbusexist\":\"true\",\"results\":[{\"name\":\"N21\",\"via\":\"西浦線\",\"direction\":\"江梨\",\"from\":\"沼津駅\",\"to\":\"長井崎小中一貫学校\",\"departure\":{\"schedule\":\"13:55\",\"prediction\":\"13:55\"},\"arrive\":{\"schedule\":\"14:45\",\"prediction\":\"14:45\"},\"take\":50,\"estimate\":30}]}"
+    //テスト用
+    text: string = "{\"reftime\":\"13:55\",\"isbusexist\":\"true\",\"results\":[{\"name\":\"N21\",\"via\":\"西浦線\",\"direction\":\"江梨\",\"from\":\"沼津駅\",\"to\":\"長井崎小中一貫学校\",\"departure\":{\"schedule\":\"13:55\",\"prediction\":\"13:55\"},\"arrive\":{\"schedule\":\"14:45\",\"prediction\":\"14:45\"},\"take\":50,\"estimate\":30}]}";
 
-    private busInformation = JSON.parse(jsonText) as BusInformation
-    console.log(busInformation)
+    parse<T>(json: string, type: T): T {
+        return JSON.parse(json) as T;
+    }
 }
 
 let urlBuilder = new UrlBuilder()
