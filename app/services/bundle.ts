@@ -4,8 +4,6 @@ import "bootstrap-honoka/dist/css/bootstrap.min.css"
 import "animate.css"
 import "./style.scss"
 
-import axios, {Axios} from "axios"
-
 const BASE__URL = "http://127.0.0.1:8080/api?"
 
 //For Android PWA
@@ -87,9 +85,33 @@ class HTTPClient {
 //https://developer.mozilla.org/ja/docs/Web/API/Response/text
 
 //https://maku.blog/p/x3ocp9a/
+type BusInformation = {
+    refTime: string,
+    isBusExist: string,
+    results: Result[],
+}
 
+type Result = {
+    name: string,
+    via: string,
+    direction: string,
+    from: string,
+    to: string,
+    departure: BusTime,
+    arrive: BusTime,
+    take: number,
+    estimate: number,
+}
+
+type BusTime = {
+    schedule: string,
+    prediction: string,
+}
 class Parser {
-    
+    private jsonText = "{\"reftime\":\"13:55\",\"isbusexist\":\"true\",\"results\":[{\"name\":\"N21\",\"via\":\"西浦線\",\"direction\":\"江梨\",\"from\":\"沼津駅\",\"to\":\"長井崎小中一貫学校\",\"departure\":{\"schedule\":\"13:55\",\"prediction\":\"13:55\"},\"arrive\":{\"schedule\":\"14:45\",\"prediction\":\"14:45\"},\"take\":50,\"estimate\":30}]}"
+
+    private busInformation = JSON.parse(jsonText) as BusInformation
+    console.log(busInformation)
 }
 
 let urlBuilder = new UrlBuilder()
