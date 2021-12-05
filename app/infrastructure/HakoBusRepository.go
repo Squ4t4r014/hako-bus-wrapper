@@ -2,13 +2,15 @@ package infrastructure
 
 import (
 	"bytes"
-	"github.com/PuerkitoBio/goquery"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
 type URLParameter struct {
@@ -59,7 +61,7 @@ func newRide(from string, to string) *URLParameter {
 	}
 }
 
-func (p *URLParameter) fetch() BusInformation {
+func (p *URLParameter) fetch() []byte {
 	const BASE_URI = "https://hakobus.bus-navigation.jp/wgsys/wgs/bus.htm?"
 
 	url := BASE_URI + "tabName=" + p.tabName + "&from=" + p.from + "&to=" + p.to + "&locale=" + p.locale + "&bsid=" + p.bsid
@@ -75,28 +77,17 @@ func (p *URLParameter) fetch() BusInformation {
 	}(response.Body)
 
 	body, _ := ioutil.ReadAll(response.Body)
-	return parse(body)
+	return body
 }
 
 func parse(buffer []byte) BusInformation {
-	const TIME_REGEX = "[^0-9:-]"
-	const TIME_PATTERN = "15:04"
-
 	var busInformation BusInformation
 
 	reader := bytes.NewReader(buffer)
 	document, _ := goquery.NewDocumentFromReader(reader)
 
-	refTime, err := time.Parse(
-		TIME_PATTERN,
-		strings.NewReplacer("\n", "", "\t", "").Replace(document.Find("div.container").Find("div.label_bar").Find("div.clearfix").Find("li").Next().First().Text()),
-	)
-	if err != nil {
-		println(err.Error())
-		panic("error")
-	}
-	busInformation.RefTime = refTime
-	
+	busInformation.RefTime = parseTime(siblingAt(1, document.Find("div.container").Find("div.label_bar").Find("div.clearfix").Find("li")).Text())
+
 	busInformation.IsBusExist = document.Find("div#errInfo").text() == ""
 	busInformation.Results = []result{}
 	//60分以内にバスがない(情報が掲載されてない)とき、スクレイピングを終了する
@@ -108,24 +99,26 @@ func parse(buffer []byte) BusInformation {
 		bus := selection.Find("table").Find("tbody").Find("tr")
 		result := result{}
 
-		result.Name = nextSingle(0, bus).Find("td").Find("span").Text()
-		result.Via = nextSingle(1, bus).Text()
-		result.Direction = nextSingle(2, bus).Text()
-		println(removeCtrlStr(strings.ReplaceAll(nextTo(3, bus).Find("td").First().Text(), TIME_REGEX, "")))
-		result.Estimate, err = strconv.Atoi(removeCtrlStr(strings.ReplaceAll(nextTo(3, bus).Find("td").First().Text(), TIME_REGEX, "")))
-		result.From = nextTo(4, bus).Find("font").Text()
-		departure := nextTo(5, bus).Find("td")
-		result.Departure.Schedule, _ = time.Parse(TIME_PATTERN, strings.ReplaceAll(nextSingle(0, departure).Text(), TIME_REGEX, ""))
-		result.Departure.Prediction, _ = time.Parse(TIME_PATTERN, strings.ReplaceAll(nextSingle(1, departure).Text(), TIME_REGEX, ""))
-		result.To = nextTo(6, bus).Find("font").Text()
-		arrive := nextTo(7, bus).Find("td")
-		result.Arrive.Schedule, _ = time.Parse(TIME_PATTERN, strings.ReplaceAll(nextSingle(0, arrive).Text(), TIME_REGEX, ""))
-		result.Arrive.Prediction, _ = time.Parse(TIME_PATTERN, strings.ReplaceAll(nextSingle(1, arrive).Text(), TIME_REGEX, ""))
-		take := nextTo(8, bus).Find("td").First().Text()
-		if take == "まもなく発車します" {
+		result.Name = siblingAt(0, bus).Find("td").Find("span").Text()
+		result.Via = siblingAt(1, bus).Text()
+		result.Direction = siblingAt(2, bus).Text()
+		result.Estimate, err = strconv.Atoi(timeParse(siblingAt(3, bus).Find("td").First().Text()))
+		result.From = siblingAt(4, bus).Find("font").Text()
+		departure := siblingAt(5, bus).Find("td")
+		result.Departure.Schedule, err = timeParse(siblingAt(0, departure).Text())
+		result.Departure.Prediction, err = timeParse(siblingAt(1, departure).Text())
+		result.To = siblingAt(6, bus).Find("font").Text()
+		arrive := siblingAt(7, bus).Find("td")
+		result.Arrive.Schedule = timeParse(siblingAt(0, arrive).Text())
+		result.Arrive.Prediction, err = timeParse(siblingAt(1, arrive).Text())
+		take := siblingAt(8, bus).Find("td").First()
+		if take.Text() == "まもなく発車します" {
 			result.Take = 0
 		} else {
-			result.Take, _ = strconv.Atoi(take)
+			result.Take, err = strconv.Atoi(take.Find("font").Text())
+			if err != nil {
+				panic(err)
+			}
 		}
 
 		busInformation.Results = append(busInformation.Results, result)
@@ -134,20 +127,33 @@ func parse(buffer []byte) BusInformation {
 	return busInformation
 }
 
-func removeCtrlStr(s string) string {
-	return strings.NewReplacer("\t", "", "\n", "").Replace(s)
-}
+func parseTime(s string) *time.Time {
+	const tr = regexp.MustCompile(`[^0-9:-]`)
+	const TIME_PATTERN = "15:04"
 
-func nextTo(i int, s *goquery.Selection) *goquery.Selection {
-	if i <= 0 {
-		return s
-	} else {
-		return nextTo(i - 1, s.Next())
+	s1 := tr.ReplaceAllString(s, "")
+	if strings.Contains(s1, "-") {
+		return nil
 	}
+
+	t, e := time.Parse(TIME_PATTERN, s1)
+	if e != nil {
+		return nil
+	}
+
+	return t
 }
 
 // 同じ親のi番目の兄弟を取得します
+// 配列ライクに扱えるはず？
 // i : 何番目の要素か
-func nextSingle(i int, s *goquery.Selection) *goquery.Selection {
-	return nextTo(i, s).First()
+func siblingAt(i int, s *goquery.Selection) *goquery.Selection {
+	if i == 0 {
+		return s.First()
+	} else if i > 0 {
+		return siblingAt(i-1, s.Next())
+	} else {
+		//動作未検証
+		return siblingAt(i+1, s.Prev())
+	}
 }
