@@ -61,11 +61,13 @@ func newRide(from string, to string) *URLParameter {
 	}
 }
 
-func (p *URLParameter) fetch() []byte {
+func (p *URLParameter) toURL() string {
 	const BASE_URI = "https://hakobus.bus-navigation.jp/wgsys/wgs/bus.htm?"
 
-	url := BASE_URI + "tabName=" + p.tabName + "&from=" + p.from + "&to=" + p.to + "&locale=" + p.locale + "&bsid=" + p.bsid
+	return BASE_URI + "tabName=" + p.tabName + "&from=" + p.from + "&to=" + p.to + "&locale=" + p.locale + "&bsid=" + p.bsid
+}
 
+func fetch(url string) []byte {
 	println("Access: " + url)
 
 	response, _ := http.Get(url)
