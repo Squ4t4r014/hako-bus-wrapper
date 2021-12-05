@@ -1,10 +1,14 @@
 package infrastructure
 
 import (
+	"encoding/json"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/thinkerou/favicon"
 	"net/http"
 	"os"
+	"strings"
+	"time"
 )
 
 type Routing struct {
@@ -19,6 +23,7 @@ func NewRouting() *Routing {
 		AbsolutePath: c.AbsolutePath,
 	}
 	r.loadTemplates()
+	r.setHeader()
 	r.setRouting()
 	return r
 }
@@ -29,12 +34,39 @@ func (r *Routing) loadTemplates() {
 	r.Gin.LoadHTMLGlob(r.AbsolutePath + "/app/interfaces/presenters/*")
 }
 
-func (r *Routing) setRouting() {
-	const ZURA = "ずらちゃんずら"
-	const DEPLOY = "https://zura-chan-zura.herokuapp.com"
+func (r *Routing) setHeader() {
+	r.Gin.Use(cors.New(cors.Config{
+		AllowOrigins: []string{
+			"*",
+		},
+		AllowCredentials: false,
+		AllowHeaders: []string{
+			"Content-Type",
+		},
+		AllowMethods: []string{
+			"GET",
+			"HEAD",
+			"OPTIONS",
+		},
+		MaxAge: time.Duration(86400),
+	}))
+}
 
+func (r *Routing) setRouting() {
 	r.Gin.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", gin.H{})
+	})
+
+	r.Gin.GET("/api", func(c *gin.Context) {
+		from := c.Query("from")
+		to := c.Query("to")
+
+		ride := newRide(from, to).toURL
+		busInformation := parse(fetch(ride))
+		marshal, _ := json.Marshal(busInformation)
+		jsonText := strings.NewReplacer("\\n", "", "\\t", "").Replace(string(marshal))
+		println(jsonText)
+		c.JSON(200, jsonText)
 	})
 }
 
