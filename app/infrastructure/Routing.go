@@ -61,8 +61,8 @@ func (r *Routing) setRouting() {
 		from := c.Query("from")
 		to := c.Query("to")
 
-		ride := newRide(from, to)
-		busInformation := parse(ride.fetch())
+		ride := newRide(from, to).toURL
+		busInformation := parse(fetch(ride))
 		marshal, _ := json.Marshal(busInformation)
 		jsonText := strings.NewReplacer("\\n", "", "\\t", "").Replace(string(marshal))
 		println(jsonText)
