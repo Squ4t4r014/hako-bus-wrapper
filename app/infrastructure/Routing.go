@@ -8,14 +8,14 @@ import (
 )
 
 type Routing struct {
-	Gin *gin.Engine
+	Gin          *gin.Engine
 	AbsolutePath string
 }
 
 func NewRouting() *Routing {
 	c, _ := NewConfig()
 	r := &Routing{
-		Gin: gin.Default(),
+		Gin:          gin.Default(),
 		AbsolutePath: c.AbsolutePath,
 	}
 	r.loadTemplates()
@@ -25,7 +25,7 @@ func NewRouting() *Routing {
 
 func (r *Routing) loadTemplates() {
 	r.Gin.Use(favicon.New("./dist/assets/favicon.ico"))
-	r.Gin.Static("/assets", r.AbsolutePath + "/dist/assets")
+	r.Gin.Static("/assets", r.AbsolutePath+"/dist/assets")
 	r.Gin.LoadHTMLGlob(r.AbsolutePath + "/app/interfaces/presenters/*")
 }
 
@@ -33,15 +33,8 @@ func (r *Routing) setRouting() {
 	const ZURA = "ずらちゃんずら"
 	const DEPLOY = "https://zura-chan-zura.herokuapp.com"
 
-	r.Gin.GET("/", func (c *gin.Context) {
-		c.HTML(http.StatusOK, "index.html", gin.H {
-			"title" : ZURA + "💓",
-			"text" : ZURA,
-			"face" : "ﾉcﾉ,,・o・,,ﾉﾚ💓",
-			"href" : "https://twitter.com/share" +
-				"?url=" + DEPLOY +
-				"&text=" + ZURA + "💓",
-		})
+	r.Gin.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", gin.H{})
 	})
 }
 

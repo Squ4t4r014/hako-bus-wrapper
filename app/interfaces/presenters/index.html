@@ -6,6 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{.title}}</title>
 
+    <!-- For iOS PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Hakobus-Wrapper">
+    <link rel="apple-touch-icon" href="assets/icon-152x152.png">
+
+    <!-- For Android PWA -->
+    <link rel="assets/manifest.json">
+
+
+
     <link rel="stylesheet" type="text/css" href="/assets/style.css">
 </head>
 <body class="no-thank-yu">
@@ -16,20 +27,31 @@
 </header>
 -->
 <main>
-    <div class="jumbotron-fluid jumbotron-extend d-flex align-items-center justify-content-center hero-header">
-        <div class="container-fluid">
-            <div class="col-12 primary-text text-nowrap animate__animated animate__zoomIn">{{.text}}</div>
-            <div class="col-12 secondary-text text-nowrap animate__animated animate__zoomIn">{{.face}}</div>
-            <div class="col-12 twitter-button" style="padding-top: 8px">
-                <a href="{{.href}}" class="btn btn-primary btn-sm animate__animated animate__zoomIn twitter-button" role="button">
-                    <img class="twitter-icon" src="assets/tw_logo.png"/>
-                    <span class="text-nowrap">ツイート</span>
-                </a>
-            </div>
-            <div class="row">
-                <div class="col-12" id="container-canvas">
-                    <canvas id="canvas-wave" width="800" height="200"></canvas>
+    <div class="container-fluid">
+
+        <div class="row">
+            <h1 class="col-12 title text-center text-break">函館バス 接近情報</h1>
+        </div>
+        <div class="row">
+            <div class="col-lg-4 col-md-12">
+                <div class="form-group">
+                    <label class="text" for="BusStopFrom">乗車バス停</label>
+                    <input type="text" class="form-control text" id="BusStopFrom" placeholder="例 : 函館駅前">
                 </div>
+            </div>
+            <div class="col-lg-4 col-md-12 text-center">
+                <div class="form-group">
+                    <button class="btn btn-info" id="btn-swap">いれかえる</button>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-12">
+                <div class="form-group">
+                    <label class="text" for="BusStopTo">降車バス停</label>
+                    <input type="text" class="form-control text" id="BusStopTo" placeholder="例 : ロープウェイ前">
+                </div>
+            </div>
+            <div class="col-12 text-center">
+                    <button class="btn btn-success btn-block" id="btn-confirm">検索</button>
             </div>
         </div>
     </div>
